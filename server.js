@@ -1224,8 +1224,8 @@ app.get("/api/documents/types", auth, async (req, res) => {
 
 // ============== NOTIFICATION ENDPOINTS ==============
 
-// GET /api/notifications - ดึงรายการการแจ้งเตือน (no auth for testing)
-app.get("/api/notifications", async (req, res) => {
+// GET /api/notifications - ดึงรายการการแจ้งเตือน
+app.get("/api/notifications", auth, async (req, res) => {
   try {
     const { search, type, unreadOnly, deviceId, limit = 50, offset = 0 } = req.query;
 
@@ -1305,7 +1305,7 @@ app.get("/api/notifications", async (req, res) => {
 });
 
 // GET /api/notifications/:id - ดึงรายละเอียดการแจ้งเตือน
-app.get("/api/notifications/:id", async (req, res) => {
+app.get("/api/notifications/:id", auth, async (req, res) => {
   try {
     const { id } = req.params;
 
