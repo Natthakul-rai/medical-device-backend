@@ -52,6 +52,10 @@ const Device = sequelize.define("devices", {
   serial_number: { type: DataTypes.STRING(100) },
   category: { type: DataTypes.STRING(100) },
   next_calibration_date: { type: DataTypes.DATE },
+  price: { type: DataTypes.DECIMAL(15, 2), allowNull: true },
+  supplier_company: { type: DataTypes.STRING(255), allowNull: true },
+  purchaser_department: { type: DataTypes.STRING(255), allowNull: true },
+  image_url: { type: DataTypes.STRING(500), allowNull: true },
 }, { timestamps: true });
 
 // Documents (URL-based storage)
@@ -607,9 +611,30 @@ app.post("/api/devices/:id/documents", auth, isAdmin, uploadPDF.single("file"), 
   try {
     const device = await Device.findByPk(req.params.id);
     if (!device) return res.status(404).json({ message: "Device not found" });
+
+    // Map document types
+    const documentTypeMap = {
+      "calibration": "ใบรับรองการสอบเทียบ",
+      "manual": "คู่มือการใช้งาน",
+      "report": "รายงานการซ่อม",
+      "inspection": "บันทึกการตรวจสอบประจำวัน"
+    };
+
     const type = req.body.type || "calibration";
-    const file_path = `uploads/documents/${req.file.filename}`;
-    const doc = await Document.create({ device_id: device.id, type, file_path });
+    const docId = `DOC-${Math.floor(Math.random() * 900000 + 100000)}`;
+    const document_type = documentTypeMap[type] || "ใบรับรองการสอบเทียบ";
+
+    const doc = await Document.create({
+      id: docId,
+      device_id: device.id,
+      device_name: device.name,
+      document_type: document_type,
+      file_name: req.file.originalname,
+      document_url: `uploads/documents/${req.file.filename}`,
+      file_size: req.file.size,
+      uploaded_by: req.user.name || 'ผู้ดูแลระบบ',
+      user_id: req.user.id
+    });
     res.status(201).json(doc);
   } catch (e) {
     res.status(400).json({ message: e.message });
@@ -674,7 +699,7 @@ app.delete("/api/attachments/:id", auth, isAdmin, async (req, res) => {
 app.get("/api/documents/:docId/download", auth, async (req, res) => {
   const doc = await Document.findByPk(req.params.docId);
   if (!doc) return res.status(404).json({ message: "Document not found" });
-  const abs = path.join(__dirname, doc.file_path);
+  const abs = path.join(__dirname, doc.document_url);
   if (!fs.existsSync(abs)) return res.status(404).json({ message: "File missing" });
   res.download(abs);
 });
