@@ -10,6 +10,10 @@ const Device = sequelize.define("Device", {
     defaultValue: "ready",
   },
   calibration_date: { type: DataTypes.DATE },
+  price: { type: DataTypes.DECIMAL(15, 2), allowNull: true },
+  supplier_company: { type: DataTypes.STRING, allowNull: true },
+  purchaser_department: { type: DataTypes.STRING, allowNull: true },
+  image_url: { type: DataTypes.STRING(500), allowNull: true },
 });
 
 export default Device;
