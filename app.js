@@ -161,7 +161,10 @@ Report.belongsTo(User, { foreignKey: "user_id" });
 // ============== APP & MIDDLEWARES ==============
 const app = express();
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: 'https://radtel.co',
+  credentials: true
+}));
 app.use(bodyParser.json({ limit: "10mb" }));
 app.use(morgan("dev"));
 app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // serve files
