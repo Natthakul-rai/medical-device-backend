@@ -166,7 +166,11 @@ Report.belongsTo(User, { foreignKey: "user_id" });
 const app = express();
 app.use(helmet());
 app.use(cors({
-  origin: 'https://radtel.co',
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true); // allow mobile apps / curl
+    if (origin.endsWith('.radtel.co')) return cb(null, true);
+    cb(new Error('Not allowed by CORS'));
+  },
   credentials: true
 }));
 app.use(bodyParser.json({ limit: "10mb" }));
